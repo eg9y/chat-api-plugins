@@ -1,57 +1,35 @@
-# OpenAI Chat with Plugins
+# chat-api-plugins
 
-This repository contains a Node.js script that allows users to interact with any OpenAI plugin. The script fetches plugin data and OpenAPI data from the plugin's URL, and then uses OpenAI's GPT-4 model to chat with the plugin. Users can ask questions related to the plugin's functionality and receive responses from the plugin.
+This repository contains a simple example of how to call ChatGPT plugins that don't require authentication. The code is written in TypeScript, and it leverages the OpenAI API to process user messages and interact with plugin APIs based on the OpenAPI Specification provided by the plugin.
 
-## Features
+## Table of Contents
 
-- Fetches plugin data and OpenAPI data from the plugin's URL.
-- Generates API descriptions based on the fetched OpenAPI data.
-- Allows users to chat with the plugin using OpenAI's GPT-4 model.
-- Provides responses to user queries based on the plugin's functionality.
-
-## Prerequisites
-
-- Node.js
-- An OpenAI API key
+- [Installation](#installation)
+- [Usage](#usage)
+- [File Structure](#file-structure)
 
 ## Installation
 
-1. Clone the repository:
-
-```bash
-git clone https://github.com/your-repo/openai-chat-with-plugins.git
-cd openai-chat-with-plugins
-```
-
-2. Install the required dependencies:
-   ```bash
-   npm install
-   ```
-3. Create a `.env` file in the root directory of the project and add your OpenAI API key:
-
-   ```bash
-   OPEN_API_KEY=your_openai_api_key
-   ```
+1. Clone this repository
+2. Run `npm install` to install the required dependencies
+3. Create a `.env` file in the project root and add your OpenAI API key as `OPEN_API_KEY=<your-api-key>`
+4. Compile TypeScript using `tsc` or `npx tsc`
 
 ## Usage
 
-1. Open the `main.ts` file and replace the `pluginUrl` variable with the actual plugin URL, and your message
-2. Run the script:
+```javascript
+//main.ts
 
-```bash
-npm start
+const pluginUrl = 'https://www.example.com'; // Replace with the actual plugin URL
+const message = 'Recommend some sneakers with the price range of $50-$100'; // Replace with your actual message
+
+chatWithPlugin(pluginUrl, message);
 ```
 
-3. The script will fetch the plugin data, generate API descriptions, and provide a response from the plugin based on the user's query.
+The `chatWithPlugin` function fetches the plugin data, interacts with the OpenAI API, makes the appropriate API call to the plugin, and logs the response.
 
-## Contributing
+## File Structure
 
-Contributions are welcome! Please feel free to submit pull requests or open issues to improve the project.
-
-## License
-
-This project is licensed under the MIT License. See the [LICENSE](LICENSE) file for details.
-
-## Disclaimer
-
-This project is not officially affiliated with OpenAI. It is a demonstration of how to interact with OpenAI plugins using the OpenAI API.
+- `main.ts`: The main entry point of the application, containing the `chatWithPlugin` function
+- `fetchPluginData.ts`: Utility function to fetch plugin data and OpenAPI Specification from a given plugin URL
+- `makeApiCall.ts`: Utility function to make API calls to the plugin based on the API request JSON object returned by the OpenAI API
