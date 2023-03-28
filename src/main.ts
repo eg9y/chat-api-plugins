@@ -5,7 +5,7 @@ import { makeApiCall } from './makeApiCall.js';
 
 dotenv.config();
 
-const pluginUrl = 'https://www.klarna.com'; // Replace with the actual plugin URL
+const pluginUrl = '; // Replace with the actual plugin URL
 
 async function chatWithPlugin(pluginUrl: string, message: string): Promise<void> {
   const fetchedData = await fetchPluginData(pluginUrl);
@@ -28,7 +28,7 @@ async function chatWithPlugin(pluginUrl: string, message: string): Promise<void>
   }[] = [
     { role: 'system', content:
     `You can only respond in 2 ways:
-    1. If user's message starts with 'Response=', provide the response as instructed in the API Description.
+    1. If user's message starts with 'Response=', modify this response as instructed in the API Description.
     2. Else, Refer to the OpenAPI Spec and API Description to output the most appropriate API call for the user's query, and format it as a JSON object with http_method, path, params (optional), data (optional). E.g. {http_method: 'get',path:'/api/v1/search',params:{'q':'shirt'}}` },
     { role: 'system', content:`.\n API Description:\n${pluginData.description_for_model}\n
 OpenAPI Spec: ${JSON.stringify(openApiData)}\n
@@ -61,16 +61,13 @@ Else, do the following:
     data?: { [key: string]: any}
   } = JSON.parse(assistantReply)
 
+
   console.info('apiCall', apiCall);
 
   // if assistant reply starts with a capitalized HTTP method:
   if (apiCall) {
     // make the API call
-    const response = await makeApiCall(openApiData.servers[0].url || pluginUrl, {
-      method: apiCall.http_method,
-      path: `${apiCall.path}`,
-      params: apiCall.params,
-    });
+    const response = await makeApiCall(openApiData.servers[0].url || pluginUrl, apiCall);
     // if error, get axios error and print the reason:
     if (response === null) {
       console.error('Error making API call.');
@@ -95,5 +92,5 @@ Else, do the following:
 }
 
 // Example usage
-const message = 'Recommend some sneakers with the price range of $50-$100'; // Replace with your actual message
+const message = ''; // Replace with your actual message
 chatWithPlugin(pluginUrl, message);

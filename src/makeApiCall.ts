@@ -1,10 +1,10 @@
 import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
 export type ParsedEndpoint = {
-  method: string;
-  path: string;
-  params?: { [key: string]: any };
-  data?: { [key: string]: any };
+  http_method: 'get' | 'post' | 'put' | 'delete' | 'patch',
+  path: string,
+  params?: { [key: string]: any }
+  data?: { [key: string]: any}
 };
 
 
@@ -13,7 +13,7 @@ export async function makeApiCall(url: string, parsedResponse: ParsedEndpoint): 
     return null;
   }
 
-  const { method, path, params, data } = parsedResponse;
+  const { http_method: method, path, params, data } = parsedResponse;
 
   // Replace the base URL with the actual API base URL
   const apiUrl = `${url}${path}`;

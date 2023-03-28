@@ -28,6 +28,10 @@ chatWithPlugin(pluginUrl, message);
 
 The `chatWithPlugin` function fetches the plugin data, interacts with the OpenAI API, makes the appropriate API call to the plugin, and logs the response.
 
+## Working plugin URLs
+- https://www.klarna.com
+- https://api.speak.com
+
 ## File Structure
 
 - `main.ts`: The main entry point of the application, containing the `chatWithPlugin` function
