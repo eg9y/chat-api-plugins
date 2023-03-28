@@ -1,21 +1,27 @@
 import axios, { AxiosResponse } from "axios";
-import { ParsedResponse } from "./parseTextResponse.js";
 
-export async function makeApiCall(url: string, parsedResponse: ParsedResponse): Promise<AxiosResponse | null> {
+export type ParsedEndpoint = {
+  method: string;
+  path: string;
+  params: { [key: string]: any };
+};
+
+
+export async function makeApiCall(url: string, parsedResponse: ParsedEndpoint): Promise<AxiosResponse | null> {
   if (!parsedResponse) {
     return null;
   }
 
-  const { httpMethod, route, parameters } = parsedResponse;
+  const { method, path, params } = parsedResponse;
 
   // Replace the base URL with the actual API base URL
-  const apiUrl = `${url}${route}`;
+  const apiUrl = `${url}${path}`;
 
   try {
     const response = await axios({
-      method: httpMethod,
+      method: method,
       url: apiUrl,
-      data: parameters,
+      data: params,
     });
 
     return response;

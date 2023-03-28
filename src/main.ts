@@ -1,9 +1,7 @@
 import { Configuration, OpenAIApi } from 'openai';
 import * as dotenv from 'dotenv';
-import { generateApiDescriptions } from './generateApiDescriptions.js';
 import { fetchPluginData } from './fetchPluginData.js';
 import { makeApiCall } from './makeApiCall.js';
-import { parseTextResponse } from './parseTextResponse.js';
 
 dotenv.config();
 
@@ -24,7 +22,6 @@ async function chatWithPlugin(pluginUrl: string, message: string): Promise<void>
   });
   const openai = new OpenAIApi(config);
 
-  const details = generateApiDescriptions(openApiData)
   const messages: {
     role: 'system' | 'user' | 'assistant';
     content: string;
@@ -32,8 +29,8 @@ async function chatWithPlugin(pluginUrl: string, message: string): Promise<void>
     { role: 'system', content: `You are now using the '${pluginData.name_for_model}' plugin.
     ${pluginData.description_for_model}\n` },
     { role: 'system', content: `When user message starts with 'Response=', it is the response from the Api call, and as such, provide the response to the user as instructed above.
-    Else, choose the most appropriate API call below, and respond the corresponding API route:
-    ${details}
+    Else, choose the most appropriate API request based on the OpenAPI specification below by replying in stringified JSON format like so { http_method: method, path: path, params: params object with correct types }\n
+    OpenAPI spec: ${JSON.stringify(openApiData)}
     ` },
   ];
 
@@ -44,15 +41,26 @@ async function chatWithPlugin(pluginUrl: string, message: string): Promise<void>
   const response = await openai.createChatCompletion({
     model: 'gpt-4',
     messages: messages,
-    max_tokens: 150,
+    max_tokens: 250,
+    temperature: 0.1
   });
 
   const assistantReply = response.data.choices[0].message.content;
 
+  const apiCall: {
+    http_method: 'get' | 'post' | 'put' | 'delete' | 'patch',
+    path: string,
+    params: { [key: string]: any }
+  } = JSON.parse(assistantReply)
+
   // if assistant reply starts with a capitalized HTTP method:
-  if (['GET', 'POST', 'PUT', 'DELETE', 'PATCH'].includes(assistantReply.split(' ')[0])) {
+  if (apiCall) {
     // make the API call
-    const response = await makeApiCall(pluginUrl, parseTextResponse(assistantReply));
+    const response = await makeApiCall(pluginUrl, {
+      method: apiCall.http_method,
+      path: `${apiCall.path}`,
+      params: apiCall.params,
+    });
     // if error, get axios error and print the reason:
     if (response === null) {
       console.error('Error making API call.');
@@ -69,6 +77,7 @@ async function chatWithPlugin(pluginUrl: string, message: string): Promise<void>
       model: 'gpt-4',
       messages,
       max_tokens: 1000,
+      temperature: 0.4
     });
     console.log(messages);
     console.log(actualResponse.data.choices[0].message.content);
@@ -77,5 +86,4 @@ async function chatWithPlugin(pluginUrl: string, message: string): Promise<void>
 
 // Example usage
 const message = ''; // Replace with your actual message
-
 chatWithPlugin(pluginUrl, message);

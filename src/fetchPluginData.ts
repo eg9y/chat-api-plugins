@@ -29,9 +29,16 @@ try {
   const pluginResponse = await axios.get(`${pluginUrl}/.well-known/ai-plugin.json`);
   const pluginData: PluginData = pluginResponse.data;
 
-  const openApiResponse = await axios.get(pluginData.api.url);
-  const openApiData: OpenAPIV3.Document = yaml.load(openApiResponse.data) as OpenAPIV3.Document;
 
+  const openApiResponse = await axios.get(pluginData.api.url);
+
+  // if json, parse it
+  if (openApiResponse.headers['content-type'] === 'application/json') {
+    const openApiData: OpenAPIV3.Document = openApiResponse.data as OpenAPIV3.Document;
+    return { pluginData, openApiData };
+  }
+
+  const openApiData: OpenAPIV3.Document = yaml.load(openApiResponse.data) as OpenAPIV3.Document;
   return { pluginData, openApiData };
 } catch (error) {
   console.error('Error fetching plugin data:', error);
