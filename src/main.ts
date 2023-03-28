@@ -5,7 +5,7 @@ import { makeApiCall } from './makeApiCall.js';
 
 dotenv.config();
 
-const pluginUrl = '; // Replace with the actual plugin URL
+const pluginUrl = 'https://api.speak.com'; // Replace with the actual plugin URL
 
 async function chatWithPlugin(pluginUrl: string, message: string): Promise<void> {
   const fetchedData = await fetchPluginData(pluginUrl);
@@ -31,12 +31,8 @@ async function chatWithPlugin(pluginUrl: string, message: string): Promise<void>
     1. If user's message starts with 'Response=', modify this response as instructed in the API Description.
     2. Else, Refer to the OpenAPI Spec and API Description to output the most appropriate API call for the user's query, and format it as a JSON object with http_method, path, params (optional), data (optional). E.g. {http_method: 'get',path:'/api/v1/search',params:{'q':'shirt'}}` },
     { role: 'system', content:`.\n API Description:\n${pluginData.description_for_model}\n
-OpenAPI Spec: ${JSON.stringify(openApiData)}\n
-If user message starts with 'Response=', provide the response as instructed in the API Description.
-Else, do the following:
-1. Decide on the most appropriate API request for the user query by referring to the OpenAPI Spec and API Description.
-2. Output the request as a JSON object with http_method, path, params (optional), data (optional). E.g. {http_method: 'get',path:'/api/v1/search',params:{'q':'shirt'}}\n` },
-  ];
+OpenAPI Spec: ${JSON.stringify(openApiData)}`}
+];
 
   messages.push(
     { role: 'user', content: message },
@@ -92,5 +88,5 @@ Else, do the following:
 }
 
 // Example usage
-const message = ''; // Replace with your actual message
+const message = 'I want to improve my Bahasa Indonesia. Provide me an intermediate quiz for Bahasa Indonesia for me to practice on.'; // Replace with your actual message
 chatWithPlugin(pluginUrl, message);
