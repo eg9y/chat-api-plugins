@@ -32,8 +32,9 @@ try {
 
   const openApiResponse = await axios.get(pluginData.api.url);
 
+
   // if json, parse it
-  if (openApiResponse.headers['content-type'] === 'application/json') {
+  if (openApiResponse.headers['content-type'].includes("application/json")) {
     const openApiData: OpenAPIV3.Document = openApiResponse.data as OpenAPIV3.Document;
     return { pluginData, openApiData };
   }

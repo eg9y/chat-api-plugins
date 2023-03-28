@@ -1,9 +1,10 @@
-import axios, { AxiosResponse } from "axios";
+import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
 
 export type ParsedEndpoint = {
   method: string;
   path: string;
-  params: { [key: string]: any };
+  params?: { [key: string]: any };
+  data?: { [key: string]: any };
 };
 
 
@@ -12,17 +13,23 @@ export async function makeApiCall(url: string, parsedResponse: ParsedEndpoint): 
     return null;
   }
 
-  const { method, path, params } = parsedResponse;
+  const { method, path, params, data } = parsedResponse;
 
   // Replace the base URL with the actual API base URL
   const apiUrl = `${url}${path}`;
 
+  const axiosConfig: AxiosRequestConfig = {
+    method: method,
+    url: apiUrl,
+  }
+  if (params) {
+    axiosConfig.params = params;
+  }
+  if (data) {
+    axiosConfig.data = data;
+  }
   try {
-    const response = await axios({
-      method: method,
-      url: apiUrl,
-      data: params,
-    });
+    const response = await axios(axiosConfig);
 
     return response;
   } catch (error) {

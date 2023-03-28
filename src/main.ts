@@ -5,7 +5,7 @@ import { makeApiCall } from './makeApiCall.js';
 
 dotenv.config();
 
-const pluginUrl = ''; // Replace with the actual plugin URL
+const pluginUrl = 'https://www.klarna.com'; // Replace with the actual plugin URL
 
 async function chatWithPlugin(pluginUrl: string, message: string): Promise<void> {
   const fetchedData = await fetchPluginData(pluginUrl);
@@ -26,17 +26,24 @@ async function chatWithPlugin(pluginUrl: string, message: string): Promise<void>
     role: 'system' | 'user' | 'assistant';
     content: string;
   }[] = [
-    { role: 'system', content: `You are now using the '${pluginData.name_for_model}' plugin.
-    ${pluginData.description_for_model}\n` },
-    { role: 'system', content: `When user message starts with 'Response=', it is the response from the Api call, and as such, provide the response to the user as instructed above.
-    Else, choose the most appropriate API request based on the OpenAPI specification below by replying in stringified JSON format like so { http_method: method, path: path, params: params object with correct types }\n
-    OpenAPI spec: ${JSON.stringify(openApiData)}
-    ` },
+    { role: 'system', content:
+    `You can only respond in 2 ways:
+    1. If user's message starts with 'Response=', provide the response as instructed in the API Description.
+    2. Else, Refer to the OpenAPI Spec and API Description to output the most appropriate API call for the user's query, and format it as a JSON object with http_method, path, params (optional), data (optional). E.g. {http_method: 'get',path:'/api/v1/search',params:{'q':'shirt'}}` },
+    { role: 'system', content:`.\n API Description:\n${pluginData.description_for_model}\n
+OpenAPI Spec: ${JSON.stringify(openApiData)}\n
+If user message starts with 'Response=', provide the response as instructed in the API Description.
+Else, do the following:
+1. Decide on the most appropriate API request for the user query by referring to the OpenAPI Spec and API Description.
+2. Output the request as a JSON object with http_method, path, params (optional), data (optional). E.g. {http_method: 'get',path:'/api/v1/search',params:{'q':'shirt'}}\n` },
   ];
 
   messages.push(
     { role: 'user', content: message },
   )
+
+  console.log(messages);
+
 
   const response = await openai.createChatCompletion({
     model: 'gpt-4',
@@ -50,13 +57,16 @@ async function chatWithPlugin(pluginUrl: string, message: string): Promise<void>
   const apiCall: {
     http_method: 'get' | 'post' | 'put' | 'delete' | 'patch',
     path: string,
-    params: { [key: string]: any }
+    params?: { [key: string]: any }
+    data?: { [key: string]: any}
   } = JSON.parse(assistantReply)
+
+  console.info('apiCall', apiCall);
 
   // if assistant reply starts with a capitalized HTTP method:
   if (apiCall) {
     // make the API call
-    const response = await makeApiCall(pluginUrl, {
+    const response = await makeApiCall(openApiData.servers[0].url || pluginUrl, {
       method: apiCall.http_method,
       path: `${apiCall.path}`,
       params: apiCall.params,
@@ -69,7 +79,7 @@ async function chatWithPlugin(pluginUrl: string, message: string): Promise<void>
     const data = response.data;
 
     messages.push({
-      role: 'assistant',
+      role: 'user',
       content: `Response=${JSON.stringify(data, null, 2)}`,
     })
 
@@ -79,11 +89,11 @@ async function chatWithPlugin(pluginUrl: string, message: string): Promise<void>
       max_tokens: 1000,
       temperature: 0.4
     });
-    console.log(messages);
-    console.log(actualResponse.data.choices[0].message.content);
+    console.info(messages);
+    console.info(actualResponse.data.choices[0].message.content);
   }
 }
 
 // Example usage
-const message = ''; // Replace with your actual message
+const message = 'Recommend some sneakers with the price range of $50-$100'; // Replace with your actual message
 chatWithPlugin(pluginUrl, message);
